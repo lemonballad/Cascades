@@ -38,7 +38,9 @@ cascades/
 ├── core/              # Core computation modules
 │   ├── basis.py       # Vibrational basis state generation
 │   ├── franck_condon.py  # Overlap integral calculations
-│   └── response.py    # Cascade response functions
+│   ├── response.py    # Resonant 2DRR cascade response functions
+│   ├── fsrs.py        # FSRS (Femtosecond Stimulated Raman) response
+│   └── offres.py      # Off-resonance 2DRR with solvent effects
 ├── parameters/        # Molecular system parameters
 │   ├── pna.py         # p-Nitroaniline parameters
 │   └── myoglobin.py   # Myoglobin parameters
@@ -47,6 +49,12 @@ cascades/
 └── simulations/       # Main simulation scripts
     └── run_2drr.py    # 2DRR simulation entry point
 ```
+
+## Available Spectroscopy Types
+
+- **Resonant 2DRR**: `cascade_2drr_res` - Two-dimensional resonance Raman
+- **FSRS**: `cascade_fsrs_res` - Femtosecond Stimulated Raman Scattering
+- **Off-resonance 2DRR**: `cascade_2drr_offres` - Off-resonance with solvent contributions
 
 ## Usage Examples
 
@@ -81,6 +89,34 @@ material = MaterialParameters(
 
 # Calculate cascade and direct signals
 ratio, cascade, direct = cascade_2drr_res(e_vib, nquanta, ovlp, laser, material)
+```
+
+### FSRS Simulation
+
+```python
+from cascades.core.fsrs import cascade_fsrs_res, FSRSLaserParameters, FSRSMaterialParameters
+from cascades.core.basis import basis_tc
+from cascades.core.franck_condon import fcinfo_tc
+
+# Set up basis
+nmode, nquanta = 2, 3
+wvib = np.array([1000.0, 1200.0])
+disp = np.array([0.5, 0.3])
+base, e_vib = basis_tc(nmode, nquanta, wvib)
+ovlp = fcinfo_tc(base, disp, nmode, nquanta)
+
+# FSRS parameters
+laser = FSRSLaserParameters(
+    w_ap=24000.0, w_rp=12000.0,
+    LAMBDA_ap=100.0, LAMBDA_rp=50.0,
+    dt=10.0, nt=256
+)
+material = FSRSMaterialParameters(
+    gamma_eg=1000.0, gamma_vib=10.0,
+    weg=23000.0, wvib=1000.0
+)
+
+ratio, cascade, direct = cascade_fsrs_res(e_vib, nquanta, ovlp, laser, material)
 ```
 
 ### Detuning Scan
