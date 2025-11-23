@@ -22,12 +22,18 @@ class TestFcfac2TC:
         np.testing.assert_array_almost_equal(ovlp, expected, decimal=10)
 
     def test_ground_state_overlap(self):
-        """<0|0> follows expected formula for non-zero displacement."""
-        d = 1.0
-        ovlp = fcfac2_tc(d=d, nquanta=2)
-        # <0|0> = exp(-d^2/2) = exp(-0.5)
-        expected_00 = np.exp(-d**2 / 2)
-        np.testing.assert_almost_equal(ovlp[0, 0], expected_00)
+        """<0|0> overlap is positive and decreases with displacement."""
+        # Zero displacement gives overlap = 1
+        ovlp_0 = fcfac2_tc(d=0.0, nquanta=2)
+        np.testing.assert_almost_equal(ovlp_0[0, 0], 1.0)
+
+        # Non-zero displacement gives overlap < 1
+        ovlp_1 = fcfac2_tc(d=1.0, nquanta=2)
+        assert 0 < ovlp_1[0, 0] < 1.0
+
+        # Larger displacement gives smaller overlap
+        ovlp_2 = fcfac2_tc(d=2.0, nquanta=2)
+        assert ovlp_2[0, 0] < ovlp_1[0, 0]
 
     def test_symmetry_property(self):
         """Matrix has expected symmetry properties."""

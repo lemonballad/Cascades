@@ -1,33 +1,90 @@
-# Project Name: Cascades
+# Cascades
+
 ![Figure 1](https://github.com/user-attachments/assets/697d605d-a020-4467-a59c-32c27f4616ac)
 
+Computational spectroscopy project investigating cascade artifacts in two-dimensional resonance Raman (2DRR) spectroscopy using simulated data.
 
-This repository contains code for a project investigating the susceptibility of two-dimensional resonance Raman (2DRR) spectroscopies to signal artifacts known as cascades, leveraging synthetic/simulated data. The code is provided in two versions: MATLAB and Python.
+## Overview
 
+This repository simulates direct and cascade signals to understand how third-order nonlinear optical artifacts contaminate spectroscopic measurements. Available in both MATLAB and Python.
+
+## Implementations
+
+### Python (Recommended)
+
+Modern, well-documented Python package with type hints and test coverage.
+
+```bash
+cd python
+pip install -e .
+```
+
+```python
+from cascades.simulations import run_2drr_simulation
+
+results = run_2drr_simulation(
+    solvent="methanol",
+    nmode=3,
+    nquanta=4
+)
+print(f"Cascade/Direct ratio: {results['ratio']:.4f}")
+```
+
+**Features:**
+- Resonant 2DRR, FSRS, and off-resonance calculations
+- 5 solvents for p-nitroaniline, myoglobin parameters
+- Visualization utilities
+- Comprehensive test suite (44 tests)
+- Sphinx documentation ready
+
+See `python/README.md` for full documentation.
+
+### MATLAB
+
+Original implementation requiring MATLAB 2016+.
+
+Located in `matlab/` with sub-tasks for different analyses.
 
 ## Folder Structure
-### matlab:
-This folder contains the original MATLAB files for the project.
-### python:
-This folder contains the converted Python files for the project.
+
+```
+Cascades/
+├── python/           # Python implementation
+│   ├── cascades/     # Main package
+│   ├── tests/        # Test suite
+│   └── docs/         # Sphinx documentation
+├── matlab/           # Original MATLAB code
+│   └── sub_task_*/   # Analysis sub-tasks
+└── CLAUDE.md         # Project context for AI assistants
+```
 
 ## Dependencies
-### MATLAB:
-MATLAB 2016
 
-### Python:
-numpy:    
+### Python
+- numpy >= 1.20
+- scipy >= 1.7
+- matplotlib >= 3.4
+- pytest >= 7.0 (testing)
 
-## Usage
-### MATLAB & Python:
+### MATLAB
+- MATLAB 2016 or later
 
+## Scientific Background
 
-## Converting Between MATLAB and Python
-The Python code in the python folder was converted from the original MATLAB code in the matlab folder.
-The conversion process involved selecting pythonic substitutes for MATLAB built-in functions.
+- **2DRR**: Two-dimensional resonance Raman spectroscopy
+- **FSRS**: Femtosecond Stimulated Raman Scattering
+- **Cascades**: Third-order nonlinear optical artifacts
 
-## Contributing
-This project has ended. The purpose of this repository is to archive some of the work that was done.
+## References
+
+- A. M. Moran, A. M. Kelley. "Solvent effects on ground and excited electronic state structures of p-nitroaniline."
+- B. P. Molesky et al. "Two-Dimensional Resonance Raman Spectroscopy of Oxygen- and Water-Ligated Myoglobin" J. Chem. Phys., 145, 034203 (2016)
+- Myers et al. JCP 77, 3857 (1982) - Franck-Condon overlap integrals
+
+## Status
+
+Archive project - completed and documented for historical reference.
 
 ## License
-None
+
+None specified.

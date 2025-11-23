@@ -118,11 +118,13 @@ def cascade_2drr_res(
     LcP = 1.0 / (-W + 1j * gamma_vib)
 
     # Zero out diagonal terms
-    Lc0[w == 0] = 0
-    Lc0C[w == 0] = 0
-    Lc1[w == 0] = 0
-    Lc2[w == 0] = 0
-    LcP[w == 0] = 0
+    diag_mask = (w == 0)
+    Lc0[diag_mask] = 0
+    Lc0C[diag_mask] = 0
+    Lc1[diag_mask] = 0
+    Lc2[diag_mask] = 0
+    # For 3D array LcP, broadcast the 2D mask
+    LcP[:, diag_mask] = 0
 
     # Main computation loop - assuming m=0 (ground state)
     m = 0
