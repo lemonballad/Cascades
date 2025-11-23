@@ -40,7 +40,8 @@ cascades/
 │   ├── franck_condon.py  # Overlap integral calculations
 │   ├── response.py    # Resonant 2DRR cascade response functions
 │   ├── fsrs.py        # FSRS (Femtosecond Stimulated Raman) response
-│   └── offres.py      # Off-resonance 2DRR with solvent effects
+│   ├── offres.py      # Off-resonance 2DRR with solvent effects
+│   └── optimized.py   # Numba-accelerated functions (10-50x speedup)
 ├── parameters/        # Molecular system parameters
 │   ├── pna.py         # p-Nitroaniline parameters
 │   └── myoglobin.py   # Myoglobin parameters
@@ -48,6 +49,26 @@ cascades/
 │   └── plots.py       # 2D spectrum plotting
 └── simulations/       # Main simulation scripts
     └── run_2drr.py    # 2DRR simulation entry point
+```
+
+## Performance Optimization
+
+For 10-50x speedup on larger basis sets, install with Numba:
+
+```bash
+pip install cascades[fast]
+# or: pip install numba>=0.56
+```
+
+Use the optimized functions:
+
+```python
+from cascades.core import fcfac2_tc_fast, fcinfo_tc_fast, check_numba_available
+
+if check_numba_available():
+    ovlp = fcinfo_tc_fast(base, disp, nmode, nquanta)  # JIT-compiled
+else:
+    ovlp = fcinfo_tc(base, disp, nmode, nquanta)  # Pure numpy fallback
 ```
 
 ## Available Spectroscopy Types
