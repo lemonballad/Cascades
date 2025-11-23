@@ -8,16 +8,28 @@
 
 ## Technology Stack
 
-- **Primary Language:** MATLAB (v2016 or later required)
-- **Secondary Language:** Python with numpy (planned conversion, not yet implemented)
+- **Primary Language:** Python 3.9+ with numpy/scipy (recommended)
+- **Legacy:** MATLAB (v2016 or later required)
 - **IDE:** JetBrains PyCharm/IntelliJ (configured for Python 3.9)
+
+## Primary Citation
+
+T. P. Cheshire and A. M. Moran, "Susceptibility of two-dimensional resonance Raman spectroscopies to cascades involving solute and solvent molecules," J. Chem. Phys. 151, 104203 (2019). https://doi.org/10.1063/1.5115401
 
 ## Directory Structure
 
 ```
 Cascades/
 ├── README.md                    # Project documentation
-└── matlab/                      # Main source code (248 .m files)
+├── python/                      # Python implementation (recommended)
+│   ├── cascades/                # Main package
+│   │   ├── core/                # Basis, Franck-Condon, response functions
+│   │   ├── parameters/          # PNA, myoglobin parameters
+│   │   ├── visualization/       # Plotting utilities
+│   │   └── simulations/         # Main entry points
+│   ├── tests/                   # Test suite (44 tests)
+│   └── docs/                    # Sphinx documentation
+└── matlab/                      # Legacy MATLAB code (248 .m files)
     ├── sub_task_1_consolidate/  # Main 2DRR/FSRS simulation (production code)
     │   └── fig_pics/            # Generated figures
     ├── sub_task_2_i3_cascade/   # I3 cascade analysis
@@ -78,6 +90,18 @@ Cascades/
 
 ## Running Simulations
 
+### Python (Recommended)
+
+```bash
+cd python
+pip install -e .
+python -c "from cascades.simulations import run_2drr_simulation; print(run_2drr_simulation('methanol'))"
+```
+
+Run tests: `python -m pytest tests/ -v`
+
+### MATLAB (Legacy)
+
 1. Open MATLAB (v2016+)
 2. Navigate to desired sub-task directory
 3. Run main scripts: `main_*.m`
@@ -114,9 +138,16 @@ No automated test framework. Validation is performed through:
 
 ## Dependencies
 
+### Python (Recommended)
+- numpy >= 1.20
+- scipy >= 1.7
+- matplotlib >= 3.4
+- pytest >= 7.0 (testing)
+- numba >= 0.56 (optional, for performance)
+
+### MATLAB (Legacy)
 - MATLAB 2016 or later
 - Standard MATLAB toolboxes (no external dependencies)
-- For Python conversion: numpy
 
 ## Notes
 

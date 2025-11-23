@@ -193,6 +193,12 @@ pytest tests/ -v
 
 ## References
 
-- A. M. Moran, A. M. Kelley. "Solvent effects on ground and excited electronic state structures of p-nitroaniline."
-- B. P. Molesky, Z. Guo, T. P. Cheshire, A. M. Moran, "Two-Dimensional Resonance Raman Spectroscopy of Oxygen- and Water-Ligated Myoglobin" J. Chem. Phys., 145, 034203 (2016)
-- Myers et al. JCP 77, 3857 (1982) - Franck-Condon overlap integrals
+### Primary Citation
+
+T. P. Cheshire and A. M. Moran, "Susceptibility of two-dimensional resonance Raman spectroscopies to cascades involving solute and solvent molecules," J. Chem. Phys. **151**, 104203 (2019). [https://doi.org/10.1063/1.5115401](https://doi.org/10.1063/1.5115401)
+
+### Related Work
+
+- A. M. Moran and A. M. Kelley, "Solvent effects on ground and excited electronic state structures of p-nitroaniline," J. Chem. Phys. **115**, 912 (2001). [https://doi.org/10.1063/1.1378319](https://doi.org/10.1063/1.1378319)
+- B. P. Molesky, Z. Guo, T. P. Cheshire, and A. M. Moran, "Two-Dimensional Resonance Raman Spectroscopy of Oxygen- and Water-Ligated Myoglobin," J. Chem. Phys. **145**, 034203 (2016). [https://doi.org/10.1063/1.4958625](https://doi.org/10.1063/1.4958625)
+- A. B. Myers, R. A. Mathies, D. J. Tannor, and E. J. Heller, "Excited state geometry changes from preresonance Raman intensities: Isoprene and hexatriene," J. Chem. Phys. **77**, 3857 (1982). [https://doi.org/10.1063/1.444339](https://doi.org/10.1063/1.444339)
