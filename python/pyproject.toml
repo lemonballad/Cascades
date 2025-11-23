@@ -19,6 +19,9 @@ dev = [
     "pytest>=7.0",
     "pytest-cov>=3.0",
 ]
+fast = [
+    "numba>=0.56",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
