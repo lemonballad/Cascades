@@ -2,11 +2,21 @@
 
 ![Figure 1](https://github.com/user-attachments/assets/697d605d-a020-4467-a59c-32c27f4616ac)
 
-Computational spectroscopy project investigating cascade artifacts in two-dimensional resonance Raman (2DRR) spectroscopy using simulated data.
+*Cascade artifacts in 2D resonance Raman spectroscopy. Sequential cascades (left) involve signal re-absorption by a second molecule. Parallel cascades (right) involve simultaneous emission from two molecules. From Cheshire & Moran, J. Chem. Phys. 151, 104203 (2019).*
+
+Computational spectroscopy project investigating cascade artifacts in two-dimensional resonance Raman (2DRR) spectroscopy.
 
 ## Overview
 
-This repository simulates direct and cascade signals to understand how third-order nonlinear optical artifacts contaminate spectroscopic measurements. Available in both MATLAB and Python.
+In nonlinear optical spectroscopy, **cascade artifacts** occur when the signal field radiated by one molecule induces a four-wave mixing process in a second molecule. These third-order artifacts can contaminate fifth-order 2DRR measurements, leading to misinterpretation of molecular dynamics.
+
+This repository provides computational tools to:
+- Calculate cascade-to-direct signal ratios for different experimental conditions
+- Simulate sequential and parallel cascade pathways
+- Model solute-solute and solute-solvent cascades
+- Evaluate the susceptibility of 2DRR and FSRS techniques to these artifacts
+
+Available in both Python (recommended) and MATLAB implementations.
 
 ## Implementations
 
@@ -71,9 +81,27 @@ Cascades/
 
 ## Scientific Background
 
-- **2DRR**: Two-dimensional resonance Raman spectroscopy
-- **FSRS**: Femtosecond Stimulated Raman Scattering
-- **Cascades**: Third-order nonlinear optical artifacts
+### Key Concepts
+
+- **2DRR**: Two-dimensional resonance Raman spectroscopy - a fifth-order nonlinear technique that probes vibrational dynamics and structural heterogeneity
+- **FSRS**: Femtosecond Stimulated Raman Scattering - ultrafast vibrational spectroscopy with temporal resolution
+- **Cascades**: Third-order artifacts where signal from one molecule drives a response in another
+
+### Cascade Types
+
+1. **Sequential cascades**: The radiated field from one molecule is absorbed by a second molecule, which then radiates a new signal
+2. **Parallel cascades**: Two molecules simultaneously emit signals that combine at the detector
+
+### Key Findings from the Paper
+
+- Parallel cascades involving two solute molecules can exceed the desired 2DRR signal when mode displacements are ≤1.0
+- Solute-solvent cascades can be significant despite 4-6 orders of magnitude smaller Raman cross-sections, due to concentration differences
+- The cascade-to-direct ratio depends strongly on laser detuning from electronic resonance
+
+### Model Systems
+
+- **p-Nitroaniline (PNA)**: Intramolecular charge-transfer molecule in various solvents (cyclohexane, dioxane, dichloromethane, acetonitrile, methanol)
+- **Myoglobin**: Heme protein system for biological applications
 
 ## References
 

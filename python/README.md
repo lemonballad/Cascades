@@ -2,6 +2,17 @@
 
 Python implementation of cascade artifact simulations for 2D resonance Raman spectroscopy.
 
+This package calculates the ratio of cascade artifacts to direct fifth-order signals in 2DRR spectroscopy. It implements the computational methods from [Cheshire & Moran, J. Chem. Phys. 151, 104203 (2019)](https://doi.org/10.1063/1.5115401).
+
+## Features
+
+- **Resonant 2DRR**: Sequential and parallel cascade calculations with full Liouville pathway decomposition
+- **FSRS**: Femtosecond Stimulated Raman Scattering response functions
+- **Off-resonance**: Solute-solvent cascade contributions
+- **Franck-Condon**: Overlap integrals using the Heller recursive algorithm
+- **Optimization**: Optional Numba JIT compilation for 10-50x speedup
+- **Type hints**: Full type annotations with numpy.typing
+
 ## Installation
 
 ```bash
