@@ -3,6 +3,30 @@ Response function calculations for cascade spectroscopy.
 
 Compute third-order cascade and fifth-order direct response functions
 for 2D resonance Raman spectroscopy simulations.
+
+Reference: T. P. Cheshire and A. M. Moran, J. Chem. Phys. 151, 104203 (2019)
+https://doi.org/10.1063/1.5115401
+
+Pathway Notation
+----------------
+Each response function term corresponds to a specific Liouville pathway through
+the density matrix. The pathways are characterized by:
+
+- Lp: Absorption-side electronic transition (ket interaction, +k)
+- Lm: Emission-side electronic transition (bra interaction, -k)
+- Lc: Vibrational coherence propagation
+
+Third-order cascade pathways (f[0-3], fc[0-3]):
+    f[0], fc[0]: |g,m><g,m| → |e,n><g,m| → |g,k><g,m| → |e,l><g,m|
+    f[1], fc[1]: |g,m><g,m| → |g,m><e,n| → |g,m><g,k| → |e,l><g,k|
+    f[2], fc[2]: |g,m><g,m| → |e,n><g,m| → |e,n><g,k| → |e,n><g,l|
+    f[3], fc[3]: |g,m><g,m| → |g,m><e,n| → |g,k><e,n| → |e,k><g,l|
+
+Fifth-order direct pathways (r[0-15]):
+    r[0-3]:  Type I   - Both vibrational coherences on ket side
+    r[4-7]:  Type II  - Both vibrational coherences on bra side
+    r[8-11]: Type III - First coherence on ket, second on bra
+    r[12-15]: Type IV - First coherence on bra, second on ket
 """
 
 import numpy as np
@@ -33,8 +57,9 @@ def cascade_2drr_res(
     nquanta: int,
     ovlp: NDArray[np.float64],
     laser_params: LaserParameters,
-    material_params: MaterialParameters
-) -> tuple[float, float, float]:
+    material_params: MaterialParameters,
+    return_spectrum: bool = False
+) -> tuple[float, float, float] | tuple[float, float, float, NDArray[np.float64], NDArray[np.float64]]:
     """
     Compute third-order cascade and fifth-order direct response functions.
 
@@ -53,20 +78,33 @@ def cascade_2drr_res(
         Laser parameters (dt, nt, w_L).
     material_params : MaterialParameters
         Material parameters (gamma_eg, gamma_vib, weg, wvib).
+    return_spectrum : bool, optional
+        If True, also return frequency grid and full parallel cascade spectrum.
+        Default is False.
 
     Returns
     -------
     ratio : float
-        Cascade-to-direct signal ratio.
+        Cascade-to-direct signal ratio (at first vibrational frequency).
     cas : float
-        Absolute cascade signal.
+        Absolute cascade signal (at first vibrational frequency).
     dir_ : float
         Absolute direct signal.
+    ww : NDArray[np.float64], optional
+        Frequency grid (cm^-1). Only returned if return_spectrum=True.
+    par_spectrum : NDArray[np.float64], optional
+        Full parallel cascade spectrum vs frequency. Only returned if
+        return_spectrum=True. Use with ww to extract signals at other
+        vibrational frequencies.
 
     Notes
     -----
     kT is fixed at 200 cm^-1 for Boltzmann population calculations.
     Speed of light: c = 2.998e-5 cm/fs.
+
+    The primary output uses the first vibrational mode (wvib[0]). To extract
+    cascade signals at other vibrational frequencies, use return_spectrum=True
+    and find the appropriate index in ww.
     """
     # Boltzmann populations
     kT = 200.0  # cm^-1
@@ -155,29 +193,48 @@ def cascade_2drr_res(
                 fp[2][:, n] += bp_m * ovlp[n, m] * ovlp[k, m] * ovlp[k, l] * ovlp[n, l] * Lp[n, m] * LcP[:, n, k] * Lc0[n, k] * Lp[n, l]
                 fp[3][:, n] += bp_m * ovlp[n, m] * ovlp[k, m] * ovlp[n, l] * ovlp[k, l] * Lm[m, n] * LcP[:, k, n] * Lc0[k, n] * Lp[k, l]
 
-                # Fifth-order direct terms
+                # Fifth-order direct terms (16 Liouville pathways)
+                # See module docstring for pathway classification
                 for u in range(iq):
                     for v in range(iq):
-                        # r1-r4
+                        # Type I: Both vibrational coherences evolve on ket side
+                        # r[0]: Lp-Lc1-Lp-Lc2-Lp (all ket-side)
                         r[0][n] += bp_m * ovlp[n, m] * ovlp[n, k] * ovlp[l, k] * ovlp[l, u] * ovlp[v, u] * ovlp[v, m] * Lp[n, m] * Lc1[k, m] * Lp[l, m] * Lc2[u, m] * Lp[v, m]
+                        # r[1]: Lp-Lc1-Lm-Lc2-Lp (ket-bra-ket)
                         r[1][n] += bp_m * ovlp[n, m] * ovlp[n, k] * ovlp[l, m] * ovlp[l, u] * ovlp[v, k] * ovlp[v, u] * Lp[n, m] * Lc1[k, m] * Lm[k, l] * Lc2[k, u] * Lp[v, u]
+                        # r[2]: Lm-Lc1-Lm-Lc2-Lp (all bra-side except final)
                         r[2][n] += bp_m * ovlp[n, m] * ovlp[n, k] * ovlp[l, k] * ovlp[l, u] * ovlp[v, m] * ovlp[v, u] * Lm[m, n] * Lc1[m, k] * Lm[m, l] * Lc2[m, u] * Lp[v, u]
+                        # r[3]: Lm-Lc1-Lp-Lc2-Lp (bra-ket-ket)
                         r[3][n] += bp_m * ovlp[n, m] * ovlp[n, k] * ovlp[l, m] * ovlp[l, u] * ovlp[v, u] * ovlp[v, k] * Lm[m, n] * Lc1[m, k] * Lp[l, k] * Lc2[u, k] * Lp[v, k]
 
-                        # r5-r8
+                        # Type II: Both vibrational coherences evolve on bra side
+                        # r[4]: Lp-Lc1-Lm-Lc2-Lp
                         r[4][n] += bp_m * ovlp[n, m] * ovlp[k, m] * ovlp[n, l] * ovlp[u, l] * ovlp[k, v] * ovlp[u, v] * Lp[n, m] * Lc1[n, k] * Lm[l, k] * Lc2[u, k] * Lp[u, v]
+                        # r[5]: Lp-Lc1-Lp-Lc2-Lp
                         r[5][n] += bp_m * ovlp[n, m] * ovlp[k, m] * ovlp[k, l] * ovlp[u, l] * ovlp[u, v] * ovlp[n, v] * Lp[n, m] * Lc1[n, k] * Lp[n, l] * Lc2[n, u] * Lp[n, v]
+                        # r[6]: Lm-Lc1-Lm-Lc2-Lp
                         r[6][n] += bp_m * ovlp[n, m] * ovlp[k, m] * ovlp[k, l] * ovlp[u, l] * ovlp[n, v] * ovlp[u, v] * Lm[m, n] * Lc1[k, n] * Lm[l, n] * Lc2[u, n] * Lp[u, v]
+                        # r[7]: Lm-Lc1-Lp-Lc2-Lp
                         r[7][n] += bp_m * ovlp[n, m] * ovlp[k, m] * ovlp[n, l] * ovlp[u, l] * ovlp[u, v] * ovlp[k, v] * Lm[m, n] * Lc1[k, n] * Lp[k, l] * Lc2[k, u] * Lp[k, v]
 
-                        # r9-r16
+                        # Type III: First coherence ket-side, second bra-side
+                        # r[8]: Lp-Lc1-Lp-Lc2-Lp
                         r[8][n] += bp_m * ovlp[n, m] * ovlp[n, k] * ovlp[l, k] * ovlp[u, m] * ovlp[u, v] * ovlp[l, v] * Lp[n, m] * Lc1[k, m] * Lp[l, m] * Lc2[l, u] * Lp[l, v]
+                        # r[9]: Lp-Lc1-Lm-Lc2-Lp
                         r[9][n] += bp_m * ovlp[n, m] * ovlp[n, k] * ovlp[l, m] * ovlp[u, k] * ovlp[l, v] * ovlp[u, v] * Lp[n, m] * Lc1[k, m] * Lm[k, l] * Lc2[u, l] * Lp[u, v]
+                        # r[10]: Lm-Lc1-Lp-Lc2-Lp
                         r[10][n] += bp_m * ovlp[n, m] * ovlp[n, k] * ovlp[l, m] * ovlp[u, k] * ovlp[u, v] * ovlp[l, v] * Lm[m, n] * Lc1[m, k] * Lp[l, k] * Lc2[l, u] * Lp[l, v]
+                        # r[11]: Lm-Lc1-Lm-Lc2-Lp
                         r[11][n] += bp_m * ovlp[n, m] * ovlp[n, k] * ovlp[l, k] * ovlp[u, m] * ovlp[l, v] * ovlp[u, v] * Lm[m, n] * Lc1[m, k] * Lm[m, l] * Lc2[u, l] * Lp[u, v]
+
+                        # Type IV: First coherence bra-side, second ket-side
+                        # r[12]: Lp-Lc1-Lm-Lc2-Lp
                         r[12][n] += bp_m * ovlp[n, m] * ovlp[k, m] * ovlp[n, l] * ovlp[k, u] * ovlp[v, l] * ovlp[v, u] * Lp[n, m] * Lc1[n, k] * Lm[l, k] * Lc2[l, u] * Lp[v, u]
+                        # r[13]: Lp-Lc1-Lp-Lc2-Lp
                         r[13][n] += bp_m * ovlp[n, m] * ovlp[k, m] * ovlp[k, l] * ovlp[n, u] * ovlp[v, u] * ovlp[v, l] * Lp[n, m] * Lc1[n, k] * Lp[n, l] * Lc2[u, l] * Lp[v, l]
+                        # r[14]: Lm-Lc1-Lm-Lc2-Lp
                         r[14][n] += bp_m * ovlp[n, m] * ovlp[k, m] * ovlp[k, l] * ovlp[n, u] * ovlp[v, l] * ovlp[v, u] * Lm[m, n] * Lc1[k, n] * Lm[l, n] * Lc2[l, u] * Lp[v, u]
+                        # r[15]: Lm-Lc1-Lp-Lc2-Lp
                         r[15][n] += bp_m * ovlp[n, m] * ovlp[k, m] * ovlp[n, l] * ovlp[k, u] * ovlp[v, u] * ovlp[v, l] * Lm[m, n] * Lc1[k, n] * Lp[k, l] * Lc2[u, l] * Lp[v, l]
 
     # Sum over states
@@ -217,5 +274,10 @@ def cascade_2drr_res(
     cas = np.abs(cascade)
     dir_ = np.abs(direct)
     ratio = cas / dir_
+
+    if return_spectrum:
+        # Return full parallel cascade spectrum for multi-frequency extraction
+        par_spectrum = np.abs(seq + par)
+        return float(ratio), float(cas), float(dir_), ww, par_spectrum
 
     return float(ratio), float(cas), float(dir_)

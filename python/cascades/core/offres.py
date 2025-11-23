@@ -3,6 +3,16 @@ Off-resonance response functions for 2DRR spectroscopy.
 
 Compute cascade and direct signals for off-resonance conditions
 including solvent contributions.
+
+Reference: T. P. Cheshire and A. M. Moran, J. Chem. Phys. 151, 104203 (2019)
+https://doi.org/10.1063/1.5115401
+
+This module implements Section IV.C of the paper, which discusses cascades
+involving both solute and solvent molecules. The cascade signal includes:
+1. Solute-solute sequential cascades (dominant)
+2. Solute-solvent cross-cascades (first molecule solute, second solvent)
+3. Solvent-solute cross-cascades (first molecule solvent, second solute)
+4. Parallel cascades for all combinations
 """
 
 import numpy as np
@@ -208,15 +218,46 @@ def cascade_2drr_offres(
     direct = sum(r_sum)
 
     # Sequential cascades
-    seq1 = -(sum(f_solv_sum) + sum(f_solvC_sum)) * sum(f_sol_sum)
-    seq2 = -(sum(f_sol_sum) + sum(f_solC_sum)) * sum(f_solv_sum[:2])
-    seq = seq1 + seq2
+    # 1. Solute-solute sequential (dominant contribution)
+    seq_solute = sum(fi**2 for fi in f_sol_sum)
+    seq_solute += 2 * (f_sol_sum[0] * f_sol_sum[1] + f_sol_sum[0] * f_sol_sum[2] +
+                       f_sol_sum[0] * f_sol_sum[3] + f_sol_sum[1] * f_sol_sum[2] +
+                       f_sol_sum[1] * f_sol_sum[3] + f_sol_sum[2] * f_sol_sum[3])
+    # Conjugate cross-terms for solute
+    seq_solute += sum(fci * fi for fci, fi in zip(f_solC_sum, f_sol_sum))
+    seq_solute += (f_solC_sum[0] * f_sol_sum[1] + f_solC_sum[0] * f_sol_sum[2] +
+                   f_solC_sum[0] * f_sol_sum[3] + f_solC_sum[1] * f_sol_sum[0] +
+                   f_solC_sum[1] * f_sol_sum[2] + f_solC_sum[1] * f_sol_sum[3] +
+                   f_solC_sum[2] * f_sol_sum[0] + f_solC_sum[2] * f_sol_sum[1] +
+                   f_solC_sum[2] * f_sol_sum[3] + f_solC_sum[3] * f_sol_sum[0] +
+                   f_solC_sum[3] * f_sol_sum[1] + f_solC_sum[3] * f_sol_sum[2])
+
+    # 2. Solute-solvent cross-cascades
+    # First cascade through solute, second through solvent
+    seq_cross1 = sum(f_sol_sum) * sum(f_solv_sum)
+    seq_cross1 += sum(f_solC_sum) * sum(f_solvC_sum)
+
+    # 3. Solvent-solute cross-cascades
+    # First cascade through solvent, second through solute
+    seq_cross2 = sum(f_solv_sum) * sum(f_sol_sum)
+    seq_cross2 += sum(f_solvC_sum) * sum(f_solC_sum)
+
+    seq = seq_solute + seq_cross1 + seq_cross2
 
     # Parallel cascades
     wr = 1.0 / nw
-    par1 = -2 * convolve(sum(fPA_sum), -1j * sum(fPSB_sum), mode='same') * wr
-    par2 = -2 * convolve(sum(fPSA_sum), -1j * sum(fPB_sum), mode='same') * wr
-    par = par1 + par2
+    # Solute-solute parallel
+    fPA_total = sum(fPA_sum)
+    fPB_total = sum(fPB_sum)
+    par_solute = 2 * convolve(fPA_total, fPB_total, mode='same') * wr
+
+    # Solute-solvent parallel cross-cascades
+    fPSA_total = sum(fPSA_sum)
+    fPSB_total = sum(fPSB_sum)
+    par_cross1 = 2 * convolve(fPA_total, fPSB_total, mode='same') * wr
+    par_cross2 = 2 * convolve(fPSA_total, fPB_total, mode='same') * wr
+
+    par = par_solute + par_cross1 + par_cross2
 
     cascade = seq + par[iomega]
     ratio = np.abs(cascade) / np.abs(direct)
